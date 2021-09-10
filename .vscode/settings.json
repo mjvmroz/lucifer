@@ -1,0 +1,42 @@
+{
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4,
+    "search.exclude": {
+        "**/*.code-search": true,
+        "target": true
+    },
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "target": true
+    },
+    "[ts]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+        "editor.quickSuggestions": {
+            "strings": true
+        },
+        "editor.suggest.insertMode": "replace",
+        "gitlens.codeLens.scopes": ["document"],
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[markdown]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.wordWrap": "wordWrapColumn",
+        "editor.wordWrapColumn": 80,
+        "editor.wordBasedSuggestions": false,
+        "editor.lineNumbers": "off",
+        "editor.renderIndentGuides": false
+    },
+    // Yes, this is mandatory.
+    "vscode-pets.theme": "none",
+    "vscode-pets.petType": "crab",
+    "vscode-pets.position": "explorer",
+    "vscode-pets.petColor": "red",
+    "vscode-pets.petSize": "medium",
+    "rust-analyzer.inlayHints.enable": true
+}

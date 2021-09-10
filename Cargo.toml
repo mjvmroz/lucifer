@@ -1,6 +1,6 @@
 [workspace]
 
-members = ["mandelbrot"]
+members = ["compute"]
 
 [profile.release]
 opt-level = "s"
