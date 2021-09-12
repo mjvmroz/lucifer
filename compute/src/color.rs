@@ -44,6 +44,14 @@ impl Color {
         b: 1.0,
     };
 
+    pub(crate) fn sqrt(&self) -> Color {
+        Color {
+            r: self.r.sqrt(),
+            g: self.g.sqrt(),
+            b: self.b.sqrt(),
+        }
+    }
+
     pub(crate) fn of_vec3(v: Vec3) -> Color {
         Color {
             r: v.x,

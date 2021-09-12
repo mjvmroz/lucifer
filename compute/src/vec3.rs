@@ -3,6 +3,8 @@ use derive_more::{
     SubAssign, Sum,
 };
 
+use crate::math::js_rand_range;
+
 #[derive(
     Debug,
     Default,
@@ -53,6 +55,28 @@ impl Vec3 {
 
     pub(crate) fn z(z: f64) -> Self {
         Self { z, ..Self::ZERO }
+    }
+
+    pub(crate) fn random(min: f64, max: f64) -> Self {
+        Self {
+            x: js_rand_range(min, max),
+            y: js_rand_range(min, max),
+            z: js_rand_range(min, max),
+        }
+    }
+
+    pub(crate) fn random_in_unit_sphere() -> Self {
+        loop {
+            let p = Self::random(-1.0, 1.0);
+            if p.length_squared() >= 1.0 {
+                continue;
+            }
+            return p;
+        }
+    }
+
+    pub(crate) fn random_unit_vector() -> Self {
+        Self::random_in_unit_sphere().unit_vector()
     }
 
     pub(crate) fn length_squared(&self) -> f64 {

@@ -6,13 +6,14 @@ mod ray;
 mod utils;
 mod vec3;
 
-use rand;
+use js_sys::Math::random;
 use ray::Ray;
 use vec3::{Point3, Vec3};
 use wasm_bindgen::prelude::*;
 
 use crate::color::Color;
 use crate::geom::{Hittable, Scene, Sphere};
+use crate::math::js_rand;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global allocator.
 #[cfg(feature = "wee_alloc")]
@@ -24,14 +25,20 @@ pub fn init() {
     utils::init();
 }
 
-fn ray_color(r: &Ray, scene: &Scene) -> Color {
-    scene.hit(r, 0.0, f64::INFINITY).map_or_else(
+fn ray_color(ray: &Ray, scene: &Scene, depth: u32) -> Color {
+    if depth <= 0 {
+        return Color::BLACK;
+    }
+    scene.hit(ray, 0.001, f64::INFINITY).map_or_else(
         || {
-            let unit_direction = r.direction.unit_vector();
+            let unit_direction = ray.direction.unit_vector();
             let t = 0.5 * (unit_direction.y + 1.0);
             Color::WHITE.blend(&Color::new(0.5, 0.7, 1.0), t)
         },
-        |record| (Color::WHITE + Color::of_vec3(record.normal)) * 0.5,
+        |record| {
+            let target = record.p.vec + record.normal + Vec3::random_unit_vector();
+            ray_color(&Ray::new(record.p, target - record.p.vec), scene, depth - 1) * 0.5
+        },
     )
 }
 
@@ -56,8 +63,9 @@ pub fn get_buffer(width: u32, height: u32) -> Vec<u8> {
         origin.vec - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length),
     );
 
-    // AA
+    // Image
     let samples_per_pixel = 20;
+    let max_depth = 10;
 
     (0..height)
         .rev()
@@ -68,15 +76,15 @@ pub fn get_buffer(width: u32, height: u32) -> Vec<u8> {
                     (0..samples_per_pixel)
                         .into_iter()
                         .fold(Color::BLACK, move |acc, _i| {
-                            let u: f64 = (x as f64 + rand::random::<f64>()) / (width - 1) as f64;
-                            let v: f64 = (y as f64 + rand::random::<f64>()) / (height - 1) as f64;
+                            let u: f64 = (x as f64 + js_rand()) / (width - 1) as f64;
+                            let v: f64 = (y as f64 + js_rand()) / (height - 1) as f64;
                             let r = Ray::new(
                                 origin,
                                 lower_left_corner.vec + horizontal * u + vertical * v - origin.vec,
                             );
-                            acc + ray_color(&r, scene)
+                            acc + ray_color(&r, scene, max_depth)
                         });
-                (sampled_color / samples_per_pixel as f64).to_bytes()
+                (sampled_color / samples_per_pixel as f64).sqrt().to_bytes()
             })
         })
         .collect()
