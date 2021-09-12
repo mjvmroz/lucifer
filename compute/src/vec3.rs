@@ -2,8 +2,9 @@ use derive_more::{
     Add, AddAssign, Constructor, Display, Div, DivAssign, Mul, MulAssign, Neg, Product, Sub,
     SubAssign, Sum,
 };
+use oorandom::Rand64;
 
-use crate::math::js_rand_range;
+use crate::math::rand_range;
 
 #[derive(
     Debug,
@@ -57,17 +58,17 @@ impl Vec3 {
         Self { z, ..Self::ZERO }
     }
 
-    pub(crate) fn random(min: f64, max: f64) -> Self {
+    pub(crate) fn random(rng: &mut Rand64, min: f64, max: f64) -> Self {
         Self {
-            x: js_rand_range(min, max),
-            y: js_rand_range(min, max),
-            z: js_rand_range(min, max),
+            x: rand_range(rng, min, max),
+            y: rand_range(rng, min, max),
+            z: rand_range(rng, min, max),
         }
     }
 
-    pub(crate) fn random_in_unit_sphere() -> Self {
+    pub(crate) fn random_in_unit_sphere(rng: &mut Rand64) -> Self {
         loop {
-            let p = Self::random(-1.0, 1.0);
+            let p = Self::random(rng, -1.0, 1.0);
             if p.length_squared() >= 1.0 {
                 continue;
             }
@@ -75,12 +76,12 @@ impl Vec3 {
         }
     }
 
-    pub(crate) fn random_unit_vector() -> Self {
-        Self::random_in_unit_sphere().unit_vector()
+    pub(crate) fn random_unit_vector(rng: &mut Rand64) -> Self {
+        Self::random_in_unit_sphere(rng).unit_vector()
     }
 
-    pub(crate) fn random_in_hemisphere(&self) -> Self {
-        let in_unit_sphere = Self::random_in_unit_sphere();
+    pub(crate) fn random_in_hemisphere(&self, rng: &mut Rand64) -> Self {
+        let in_unit_sphere = Self::random_in_unit_sphere(rng);
         if in_unit_sphere.dot(&self) > 0.0 {
             in_unit_sphere
         } else {

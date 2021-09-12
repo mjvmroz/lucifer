@@ -1,41 +1,67 @@
-interface WorkerContainer {
-    worker: Worker;
-    activeJobs: number;
-    ready: boolean;
-}
-interface AppConfig {
-    workers: number;
-}
-let workers: Array<WorkerContainer> = [];
-const config: AppConfig = {
-    workers: Math.min(navigator.hardwareConcurrency || 4, 64),
-};
+import { SafeWorker } from "./custom-worker";
 
-function createWorker() {
-    const w: WorkerContainer = {
-        worker: new Worker("./worker.js"),
-        activeJobs: 0,
-        ready: false,
-    };
-    const workerReadyHandler = (e: MessageEvent) => {
-        if (e.data.ready) {
-            w.ready = true;
-            w.worker.removeEventListener("message", workerReadyHandler);
-        }
-    };
-    w.worker.addEventListener("message", workerReadyHandler);
-    return w;
-}
+export type ReadyMessage = { type: "ready" };
 
-async function resetWorkers() {
-    workers.forEach(({ worker }) => worker.terminate()); // terminate old workers/jobs
-    workers = [...Array(config.workers)].map(createWorker);
-    while (!workers.every((w) => w.ready))
-        await new Promise((resolve) => setTimeout(resolve, 300));
-}
+export class WorkerWrapper<In, Out extends { type: string }> {
+    readonly ready: Promise<void>;
 
-function render() {
-    console.log("todo");
+    constructor(
+        private readonly worker: SafeWorker<In>,
+        private callback: (message: Out) => void,
+) {
+        this.worker = worker;
+        this.ready = new Promise<void>((ready) => {
+            this.worker.onmessage = (event: MessageEvent<Out | ReadyMessage>) => {
+                if (event.data.type === "ready") {
+                    ready();
+                } else {
+                    this.callback(event.data as Out);
+                }
+            };
+        });
+    }
+
+    public postMessage(message: In): void {
+        this.worker.postMessage(message);
+    }
+
+    public destroy(): void {
+        this.callback = () => {
+            // do nothing
+        };
+        this.worker.terminate();
+    }
 }
 
-resetWorkers().then(render);
+export class WorkerPool<
+    In extends { type: string },
+    Out extends { type: string }
+> {
+    private readonly workers: WorkerWrapper<In, Out>[];
+    private i = 0;
+    private constructor(
+        readonly con: {new(): SafeWorker<In>},
+        readonly callback: (message: Out) => void,
+        public readonly size: number,
+    ) {
+        this.workers = Array(size).fill(0).map(() => new WorkerWrapper<In, Out>(new con(), callback));
+    }
+
+    public static async create<
+        In extends { type: string },
+        Out extends { type: string }
+    >(
+        con: {new(): SafeWorker<In>},
+        callback: (message: Out) => void,
+        size: number = Math.max(Math.min(navigator.hardwareConcurrency || 4, 64), 1),
+    ): Promise<WorkerPool<In, Out>> {
+        const pool = new WorkerPool<In, Out>(con, callback, size);
+        await Promise.all(pool.workers.map(worker => worker.ready));
+        return pool;
+    }
+
+    public postMessage(message: In): void {
+        this.workers[this.i].postMessage(message);
+        this.i = (this.i + 1) % this.workers.length;
+    }
+}

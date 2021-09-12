@@ -13,11 +13,15 @@ const appConfig = {
             root: path.resolve(__dirname, "."),
         }),
         new MiniCssExtractPlugin(),
+        new WasmPackPlugin({
+            crateDirectory: path.resolve(__dirname, "../compute"),
+        }),
     ],
     module: {
         rules: [
+            {test: /\.worker\.ts$/, loader: 'worker-loader'},
             {
-                test: /\.ts$/,
+                test: /\.tsx?$/,
                 use: "ts-loader",
                 exclude: /node_modules/,
             },
@@ -45,23 +49,7 @@ const appConfig = {
         extensions: [".ts", ".js"],
     },
     output: { path: dist, filename: "app.js" },
-};
-
-const workerConfig = {
-    entry: "./app/worker.js",
-    target: "webworker",
-    plugins: [
-        new WasmPackPlugin({
-            crateDirectory: path.resolve(__dirname, "../compute"),
-        }),
-    ],
-    resolve: {
-        extensions: [".js", ".wasm"],
-        fallback: {},
-    },
-    output: { path: dist, filename: "worker.js" },
-    //[DDR 2020-11-20] asyncWebAssembly is broken by webpack 5. (See https://github.com/rustwasm/wasm-bindgen/issues/2343)
     experiments: { syncWebAssembly: true },
 };
 
-module.exports = [appConfig, workerConfig];
+module.exports = [appConfig];

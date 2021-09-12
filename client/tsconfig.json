@@ -2,7 +2,7 @@
     "compilerOptions": {
         "outDir": "./ts-dist/",
         "noImplicitAny": true,
-        "module": "es6",
+        "module": "ESNext",
         "target": "es5",
         "allowJs": true,
         "moduleResolution": "node"

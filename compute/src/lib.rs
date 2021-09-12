@@ -6,14 +6,13 @@ mod ray;
 mod utils;
 mod vec3;
 
-use js_sys::Math::random;
+use oorandom::Rand64;
 use ray::Ray;
 use vec3::{Point3, Vec3};
 use wasm_bindgen::prelude::*;
 
 use crate::color::Color;
 use crate::geom::{Hittable, Scene, Sphere};
-use crate::math::js_rand;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global allocator.
 #[cfg(feature = "wee_alloc")]
@@ -25,7 +24,7 @@ pub fn init() {
     utils::init();
 }
 
-fn ray_color(ray: &Ray, scene: &Scene, depth: u32) -> Color {
+fn ray_color(rng: &mut Rand64, ray: &Ray, scene: &Scene, depth: u32) -> Color {
     if depth <= 0 {
         return Color::BLACK;
     }
@@ -36,14 +35,19 @@ fn ray_color(ray: &Ray, scene: &Scene, depth: u32) -> Color {
             Color::WHITE.blend(&Color::new(0.5, 0.7, 1.0), t)
         },
         |record| {
-            let target = record.p.vec + record.normal.random_in_hemisphere();
-            ray_color(&Ray::new(record.p, target - record.p.vec), scene, depth - 1) * 0.5
+            let target = record.p.vec + record.normal.random_in_hemisphere(rng);
+            ray_color(rng, &Ray::new(record.p, target - record.p.vec), scene, depth - 1) * 0.5
         },
     )
 }
 
 #[wasm_bindgen]
-pub fn get_buffer(width: u32, height: u32) -> Vec<u8> {
+pub fn get_buffer(
+    width: u32,
+    height: u32,
+    row0: u32,
+    rows: u32,
+) -> Vec<u8> {
     let aspect_ratio: f64 = width as f64 / height as f64;
 
     // Scene
@@ -66,9 +70,9 @@ pub fn get_buffer(width: u32, height: u32) -> Vec<u8> {
     // Image
     let samples_per_pixel = 100;
     let max_depth = 50;
+    let mut rng = oorandom::Rand64::new(oorandom::Rand64::DEFAULT_INC);
 
-    (0..height)
-        .rev()
+    (row0..(row0 + rows)).rev()
         .into_iter()
         .flat_map(|y| {
             (0..width).into_iter().flat_map(move |x| {
@@ -76,13 +80,13 @@ pub fn get_buffer(width: u32, height: u32) -> Vec<u8> {
                     (0..samples_per_pixel)
                         .into_iter()
                         .fold(Color::BLACK, move |acc, _i| {
-                            let u: f64 = (x as f64 + js_rand()) / (width - 1) as f64;
-                            let v: f64 = (y as f64 + js_rand()) / (height - 1) as f64;
+                            let u: f64 = (x as f64 + rng.rand_float()) / (width - 1) as f64;
+                            let v: f64 = (y as f64 + rng.rand_float()) / (height - 1) as f64;
                             let r = Ray::new(
                                 origin,
                                 lower_left_corner.vec + horizontal * u + vertical * v - origin.vec,
                             );
-                            acc + ray_color(&r, scene, max_depth)
+                            acc + ray_color(&mut rng, &r, scene, max_depth)
                         });
                 (sampled_color / samples_per_pixel as f64).sqrt().to_bytes()
             })
