@@ -75,19 +75,37 @@ impl std::ops::Mul<Self> for Vec3 {
     }
 }
 
-pub struct Color(Vec3);
+#[derive(
+    Debug, Copy, Clone, PartialEq, Default, Constructor, Add, AddAssign, Sub, Mul, MulAssign,
+)]
+pub struct Color {
+    pub(crate) r: f64,
+    pub(crate) g: f64,
+    pub(crate) b: f64,
+}
 impl Color {
-    pub(crate) fn new(r: f64, g: f64, b: f64) -> Color {
-        Color(Vec3::new(r, g, b))
-    }
-
-    pub(crate) fn to_rgba(&self) -> [u8; 4] {
-        let r = (self.0.x * 255.999) as u8;
-        let g = (self.0.y * 255.999) as u8;
-        let b = (self.0.z * 255.999) as u8;
+    pub(crate) fn to_bytes(&self) -> [u8; 4] {
+        let r = (self.r * 255.999) as u8;
+        let g = (self.g * 255.999) as u8;
+        let b = (self.b * 255.999) as u8;
         let a = 255;
         [r, g, b, a]
     }
 }
 
-pub(crate) struct Point3(Vec3);
+#[derive(Debug, Copy, Clone, PartialEq, Default, Constructor)]
+pub(crate) struct Point3 {
+    pub vec: Vec3,
+}
+
+impl Point3 {
+    pub(crate) fn zero() -> Point3 {
+        Point3 { vec: Vec3::zero() }
+    }
+}
+
+impl Into<Vec3> for Point3 {
+    fn into(self) -> Vec3 {
+        self.vec
+    }
+}

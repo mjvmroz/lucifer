@@ -2,8 +2,9 @@ import "./static";
 
 type WorkerMessage = { type: "ready" } | { type: "image"; data: ImageData };
 
-const width = 256;
-const height = 256;
+const width = 400;
+const aspectRatio = 16 / 9;
+const height = width / aspectRatio;
 
 const canvas = document.createElement("canvas");
 canvas.width = width;
