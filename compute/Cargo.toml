@@ -1,8 +1,7 @@
 [package]
 authors = ["Michael Mroz"]
 categories = ["wasm"]
-description = "Brings the light"
-license = "Apache-2.0/MIT"
+description = "He brings the light"
 name = "lucifer"
 readme = "./README.md"
 repository = "https://github.com/mirichan/lucifer"

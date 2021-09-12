@@ -1,23 +1,23 @@
 import("../../compute/pkg").then((wasm) => {
     wasm.init();
-    console.log(wasm.add(1, 2));
     self.addEventListener("message", (ev) => {
-        try {
-            // const { coords, maxIterations, exponent, tileSize } = ev.data;
-            // const data = wasm.get_tile(
-            //     coords.x,
-            //     coords.y,
-            //     coords.z,
-            //     maxIterations,
-            //     exponent,
-            //     tileSize
-            // );
-            // self.postMessage({ coords: stringify(coords), pixels: data });
-        } catch (err) {
-            console.error(err);
+        if (ev.data.type === "test") {
+            const imageData = new ImageData(
+                new Uint8ClampedArray(
+                    wasm.get_buffer(ev.data.width, ev.data.height).buffer
+                ),
+                ev.data.width,
+                ev.data.height
+            );
+            self.postMessage({
+                type: "image",
+                data: imageData,
+            });
         }
     });
-    self.postMessage({ ready: true });
+    self.postMessage({
+        type: "ready",
+    });
 });
 
 // TODO: better events, look into shared memory:

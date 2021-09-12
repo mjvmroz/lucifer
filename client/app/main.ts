@@ -1,43 +1,29 @@
 import "./static";
 
-interface WorkerContainer {
-    worker: Worker;
-    activeJobs: number;
-    ready: boolean;
-}
-interface AppConfig {
-    workers: number;
-}
-let workers: Array<WorkerContainer> = [];
-const config: AppConfig = {
-    workers: Math.min(navigator.hardwareConcurrency || 4, 64),
-};
+type WorkerMessage = { type: "ready" } | { type: "image"; data: ImageData };
 
-function createWorker() {
-    const w: WorkerContainer = {
-        worker: new Worker("./worker.js"),
-        activeJobs: 0,
-        ready: false,
-    };
-    const workerReadyHandler = (e: MessageEvent) => {
-        if (e.data.ready) {
-            w.ready = true;
-            w.worker.removeEventListener("message", workerReadyHandler);
-        }
-    };
-    w.worker.addEventListener("message", workerReadyHandler);
-    return w;
-}
+const width = 256;
+const height = 256;
 
-async function resetWorkers() {
-    workers.forEach(({ worker }) => worker.terminate()); // terminate old workers/jobs
-    workers = [...Array(config.workers)].map(createWorker);
-    while (!workers.every((w) => w.ready))
-        await new Promise((resolve) => setTimeout(resolve, 300));
-}
+const canvas = document.createElement("canvas");
+canvas.width = width;
+canvas.height = height;
+document.body.appendChild(canvas);
 
-function render() {
-    console.log("todo");
-}
+const ctx = canvas.getContext("2d");
 
-resetWorkers().then(render);
+const worker = new Worker("./worker.js");
+worker.addEventListener("message", (e: MessageEvent<WorkerMessage>) => {
+    switch (e.data.type) {
+        case "ready":
+            worker.postMessage({
+                type: "test",
+                width,
+                height,
+            });
+            break;
+        case "image":
+            ctx.putImageData(e.data.data, 0, 0);
+            break;
+    }
+});
