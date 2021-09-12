@@ -29,9 +29,6 @@ pub(crate) struct Vec3 {
     pub(crate) z: f64,
 }
 
-pub(crate) type Point3 = Vec3;
-pub(crate) type Color = Vec3;
-
 impl Vec3 {
     pub(crate) fn zero() -> Vec3 {
         Default::default()
@@ -68,14 +65,6 @@ impl Vec3 {
     pub(crate) fn unit_vector(&self) -> Vec3 {
         *self / self.length()
     }
-
-    pub(crate) fn to_rgba(&self) -> [u8; 4] {
-        let r = (self.x * 255.999) as u8;
-        let g = (self.y * 255.999) as u8;
-        let b = (self.z * 255.999) as u8;
-        let a = 255;
-        [r, g, b, a]
-    }
 }
 
 impl std::ops::Mul<Self> for Vec3 {
@@ -85,3 +74,20 @@ impl std::ops::Mul<Self> for Vec3 {
         Vec3::new(self.x * rhs.x, self.y * rhs.y, self.z * rhs.z)
     }
 }
+
+pub struct Color(Vec3);
+impl Color {
+    pub(crate) fn new(r: f64, g: f64, b: f64) -> Color {
+        Color(Vec3::new(r, g, b))
+    }
+
+    pub(crate) fn to_rgba(&self) -> [u8; 4] {
+        let r = (self.0.x * 255.999) as u8;
+        let g = (self.0.y * 255.999) as u8;
+        let b = (self.0.z * 255.999) as u8;
+        let a = 255;
+        [r, g, b, a]
+    }
+}
+
+pub(crate) struct Point3(Vec3);
