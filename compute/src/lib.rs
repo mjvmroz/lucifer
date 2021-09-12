@@ -67,7 +67,7 @@ pub fn get_buffer(width: u32, height: u32) -> Vec<u8> {
                 let sampled_color =
                     (0..samples_per_pixel)
                         .into_iter()
-                        .fold(Color::BLACK, move |acc, i| {
+                        .fold(Color::BLACK, move |acc, _i| {
                             let u: f64 = (x as f64 + rand::random::<f64>()) / (width - 1) as f64;
                             let v: f64 = (y as f64 + rand::random::<f64>()) / (height - 1) as f64;
                             let r = Ray::new(
