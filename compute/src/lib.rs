@@ -7,7 +7,7 @@ use ray::Ray;
 use vec3::{Point3, Vec3};
 use wasm_bindgen::prelude::*;
 
-use crate::geom::{Hittable, Sphere};
+use crate::geom::{Hittable, Scene, Sphere};
 use crate::vec3::Color;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global allocator.
@@ -20,9 +20,8 @@ pub fn init() {
     utils::init();
 }
 
-fn ray_color(r: &Ray) -> Color {
-    let sphere = Sphere::new(Point3::vec(0.0, 0.0, -1.0), 0.5);
-    sphere.hit(r, 0.0, f64::MAX).map_or_else(
+fn ray_color(r: &Ray, scene: &Scene) -> Color {
+    scene.hit(r, 0.0, f64::MAX).map_or_else(
         || {
             let unit_direction = r.direction.unit_vector();
             let t = 0.5 * (unit_direction.y + 1.0);
@@ -35,6 +34,11 @@ fn ray_color(r: &Ray) -> Color {
 #[wasm_bindgen]
 pub fn get_buffer(width: u32, height: u32) -> Vec<u8> {
     let aspect_ratio: f64 = width as f64 / height as f64;
+
+    // Scene
+    let sphere = Sphere::new(Point3::vec(0.0, 0.0, -1.0), 0.5);
+    let planet = Sphere::new(Point3::vec(0.0, -100.5, -1.0), 100.0);
+    let scene = &Scene::new(vec![Box::new(sphere), Box::new(planet)]);
 
     // Camera
     let viewport_height: f64 = 2.0;
@@ -59,7 +63,7 @@ pub fn get_buffer(width: u32, height: u32) -> Vec<u8> {
                     origin,
                     lower_left_corner.vec + horizontal * u + vertical * v - origin.vec,
                 );
-                ray_color(&r).to_bytes()
+                ray_color(&r, scene).to_bytes()
             })
         })
         .collect()

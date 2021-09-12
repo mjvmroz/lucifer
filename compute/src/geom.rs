@@ -67,3 +67,23 @@ impl Hittable for Sphere {
         return Some(HitRecord::for_ray(ray, t, p, outward_normal));
     }
 }
+
+#[derive(Constructor)]
+pub(crate) struct Scene {
+    pub objects: Vec<Box<dyn Hittable>>,
+}
+
+impl Hittable for Scene {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        self.objects
+            .iter()
+            .fold((t_max, None), |(closest, res), current| {
+                if let Some(hit) = current.hit(r, t_min, closest) {
+                    (hit.t, Some(hit))
+                } else {
+                    (closest, res)
+                }
+            })
+            .1
+    }
+}
