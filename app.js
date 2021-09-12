@@ -1,0 +1,1 @@
+(()=>{"use strict";var e=document.createElement("canvas");e.width=400,e.height=225,document.body.appendChild(e);var t=e.getContext("2d"),a=new Worker("./worker.js");a.addEventListener("message",(function(e){switch(e.data.type){case"ready":a.postMessage({type:"test",width:400,height:225});break;case"image":t.putImageData(e.data.data,0,0)}}))})();
