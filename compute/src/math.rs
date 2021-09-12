@@ -1,11 +1,13 @@
 use std::f64::consts::PI;
 
-use oorandom::Rand64;
-
 pub(crate) fn rad(deg: f64) -> f64 {
     deg * PI / 180.0
 }
 
-pub(crate) fn rand_range(rng: &mut Rand64, min: f64, max: f64) -> f64 {
-    rng.rand_float() * (max - min) + min
+pub(crate) fn rand() -> f64 {
+    unsafe { js_sys::Math::random() }
+}
+
+pub(crate) fn rand_range(min: f64, max: f64) -> f64 {
+    rand() * (max - min) + min
 }
