@@ -4,7 +4,7 @@ import { ReadyMessage } from "./worker-pool";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ctx: SafeWorker<ComputeMessage | ReadyMessage> = self as any;
 
-import("compute").then((wasm) => {
+import("../../compute/pkg").then((wasm) => {
     wasm.init();
     ctx.addEventListener("message", (ev: MessageEvent<ComputeInstruction>) => {
         if (ev.data.type === "test") {
