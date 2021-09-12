@@ -21,12 +21,15 @@ pub fn init() {
 }
 
 fn ray_color(r: &Ray) -> Color {
-    if Sphere::new(Point3::new(Vec3::new(0.0, 0.0, -1.0)), 0.5).hits(r) {
-        return Color::new(1.0, 0.0, 0.0);
-    }
-    let unit_direction = r.direction.unit_vector();
-    let t = 0.5 * (unit_direction.y + 1.0);
-    Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
+    let sphere = Sphere::new(Point3::vec(0.0, 0.0, -1.0), 0.5);
+    sphere.hit(r, 0.0, f64::MAX).map_or_else(
+        || {
+            let unit_direction = r.direction.unit_vector();
+            let t = 0.5 * (unit_direction.y + 1.0);
+            Color::WHITE.blend(&Color::new(0.5, 0.7, 1.0), t)
+        },
+        |record| (Color::WHITE + Color::of_vec3(record.normal)) * 0.5,
+    )
 }
 
 #[wasm_bindgen]
@@ -49,7 +52,7 @@ pub fn get_buffer(width: u32, height: u32) -> Vec<u8> {
         .rev()
         .into_iter()
         .flat_map(|y| {
-            (0..width).rev().into_iter().flat_map(move |x| {
+            (0..width).into_iter().flat_map(move |x| {
                 let u = x as f64 / (width - 1) as f64;
                 let v = y as f64 / (height - 1) as f64;
                 let r = Ray::new(

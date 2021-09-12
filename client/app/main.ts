@@ -2,7 +2,7 @@ import "./static";
 
 type WorkerMessage = { type: "ready" } | { type: "image"; data: ImageData };
 
-const width = 400;
+const width = 800;
 const aspectRatio = 16 / 9;
 const height = width / aspectRatio;
 

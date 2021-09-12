@@ -1,6 +1,6 @@
 use derive_more::{
-    Add, AddAssign, Constructor, Display, Div, DivAssign, Mul, MulAssign, Product, Sub, SubAssign,
-    Sum,
+    Add, AddAssign, Constructor, Display, Div, DivAssign, Mul, MulAssign, Neg, Product, Sub,
+    SubAssign, Sum,
 };
 
 #[derive(
@@ -18,6 +18,7 @@ use derive_more::{
     DivAssign,
     Mul,
     MulAssign,
+    Neg,
     Product,
     Sum,
     Display,
@@ -84,12 +85,57 @@ pub struct Color {
     pub(crate) b: f64,
 }
 impl Color {
+    pub const RED: Color = Color {
+        r: 1.0,
+        g: 0.0,
+        b: 0.0,
+    };
+
+    pub const GREEN: Color = Color {
+        r: 0.0,
+        g: 1.0,
+        b: 0.0,
+    };
+
+    pub const BLUE: Color = Color {
+        r: 0.0,
+        g: 0.0,
+        b: 1.0,
+    };
+
+    pub const BLACK: Color = Color {
+        r: 0.0,
+        g: 0.0,
+        b: 0.0,
+    };
+
+    pub const WHITE: Color = Color {
+        r: 1.0,
+        g: 1.0,
+        b: 1.0,
+    };
+
+    pub(crate) fn of_vec3(v: Vec3) -> Color {
+        Color {
+            r: v.x,
+            g: v.y,
+            b: v.z,
+        }
+    }
+
     pub(crate) fn to_bytes(&self) -> [u8; 4] {
         let r = (self.r * 255.999) as u8;
         let g = (self.g * 255.999) as u8;
         let b = (self.b * 255.999) as u8;
         let a = 255;
         [r, g, b, a]
+    }
+
+    pub(crate) fn blend(&self, other: &Color, ratio: f64) -> Color {
+        let r = self.r * (1.0 - ratio) + other.r * ratio;
+        let g = self.g * (1.0 - ratio) + other.g * ratio;
+        let b = self.b * (1.0 - ratio) + other.b * ratio;
+        Color { r, g, b }
     }
 }
 
@@ -101,6 +147,12 @@ pub(crate) struct Point3 {
 impl Point3 {
     pub(crate) fn zero() -> Point3 {
         Point3 { vec: Vec3::zero() }
+    }
+
+    pub(crate) fn vec(x: f64, y: f64, z: f64) -> Point3 {
+        Point3 {
+            vec: Vec3::new(x, y, z),
+        }
     }
 }
 
