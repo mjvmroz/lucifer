@@ -11,10 +11,10 @@ import("compute").then((wasm) => {
             console.log("Generating image data for...", ev.data);
             const imageData = new ImageData(
                 new Uint8ClampedArray(
-                    wasm.get_buffer(ev.data.width, ev.data.height).buffer
+                    wasm.get_buffer(ev.data.width, ev.data.height, ev.data.row0, ev.data.rows).buffer
                 ),
                 ev.data.width,
-                ev.data.height
+                ev.data.rows
             );
             ctx.postMessage({
                 type: "image",

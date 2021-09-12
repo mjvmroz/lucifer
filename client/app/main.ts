@@ -17,7 +17,7 @@ const ctx = canvas.getContext("2d");
 WorkerPool.create(ComputeWorker, (message: ComputeMessage) => {
     switch (message.type) {
         case "image":
-            ctx.putImageData(message.data, 0, 0, 0, message.row0, message.width, message.rows);
+            ctx.putImageData(message.data, 0, height - message.rows - message.row0);
             break;
     }
 }).then(pool => {
