@@ -79,6 +79,15 @@ impl Vec3 {
         Self::random_in_unit_sphere().unit_vector()
     }
 
+    pub(crate) fn random_in_hemisphere(&self) -> Self {
+        let in_unit_sphere = Self::random_in_unit_sphere();
+        if in_unit_sphere.dot(&self) > 0.0 {
+            in_unit_sphere
+        } else {
+            -in_unit_sphere
+        }
+    }
+
     pub(crate) fn length_squared(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }

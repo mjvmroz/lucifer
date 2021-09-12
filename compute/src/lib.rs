@@ -36,7 +36,7 @@ fn ray_color(ray: &Ray, scene: &Scene, depth: u32) -> Color {
             Color::WHITE.blend(&Color::new(0.5, 0.7, 1.0), t)
         },
         |record| {
-            let target = record.p.vec + record.normal + Vec3::random_unit_vector();
+            let target = record.p.vec + record.normal.random_in_hemisphere();
             ray_color(&Ray::new(record.p, target - record.p.vec), scene, depth - 1) * 0.5
         },
     )
@@ -64,8 +64,8 @@ pub fn get_buffer(width: u32, height: u32) -> Vec<u8> {
     );
 
     // Image
-    let samples_per_pixel = 20;
-    let max_depth = 10;
+    let samples_per_pixel = 100;
+    let max_depth = 50;
 
     (0..height)
         .rev()
