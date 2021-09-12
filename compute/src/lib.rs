@@ -1,6 +1,9 @@
 mod utils;
+mod vec3;
 
 use wasm_bindgen::prelude::*;
+
+use crate::vec3::Color;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global allocator.
 #[cfg(feature = "wee_alloc")]
@@ -18,13 +21,12 @@ pub fn get_buffer(width: u32, height: u32) -> Vec<u8> {
         .into_iter()
         .flat_map(|x| {
             (0..height).into_iter().flat_map(move |y| {
-                //
-                let r: u8 = ((x as f64 / (width - 1) as f64) * 255.999) as u8;
-                let g: u8 = ((y as f64 / (height - 1) as f64) * 255.999) as u8;
-                let b = 64u8;
-                let a = 255u8;
-
-                vec![r, g, b, a].into_iter()
+                Color::new(
+                    x as f64 / (width - 1) as f64,
+                    y as f64 / (height - 1) as f64,
+                    0.25,
+                )
+                .to_rgba()
             })
         })
         .collect()
