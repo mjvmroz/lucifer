@@ -1,7 +1,5 @@
+import { ComputeMessage } from "./messages";
 import "./static";
-import ComputeWorker from "./compute.worker";
-import { ComputeMessage } from "./custom-worker";
-import { WorkerPool } from "./worker-pool";
 
 const width = 400;
 const aspectRatio = 16 / 9;
@@ -14,20 +12,13 @@ document.body.appendChild(canvas);
 
 const ctx = canvas.getContext("2d");
 
-WorkerPool.create(ComputeWorker, (message: ComputeMessage) => {
-    switch (message.type) {
-        case "image":
-            ctx.putImageData(message.data, 0, height - message.rows - message.row0);
-            break;
+const worker = new Worker(new URL("./compute.worker.ts", import.meta.url));
+
+worker.onmessage = (event: MessageEvent<ComputeMessage>) => {
+    const { data } = event;
+    if (data.type === "ready") {
+        worker.postMessage({ type: "test", width, height });
+    } else if (data.type === "image") {
+        ctx.putImageData(data.data, 0, 0);
     }
-}).then(pool => {
-    for (let i = 0; i < pool.size; i++) {
-        pool.postMessage({
-            type: "test",
-            width,
-            height,
-            row0: Math.floor(height / pool.size * i),
-            rows: Math.floor(height / pool.size)
-        });
-    }
-});
+};

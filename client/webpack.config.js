@@ -6,7 +6,15 @@ const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 
 const appConfig = {
     entry: "./app/main.ts",
-    devServer: { contentBase: dist },
+    devServer: {
+        contentBase: dist,
+        // Required in order to use SharedArrayBuffer
+        // See https://web.dev/coop-coep/
+        headers: {
+            'Cross-Origin-Embedder-Policy': 'require-corp',
+            'Cross-Origin-Opener-Policy': 'same-origin',
+        }
+    },
     plugins: [
         new HtmlWebpackPlugin({
             template: "index.html",
@@ -14,12 +22,14 @@ const appConfig = {
         }),
         new MiniCssExtractPlugin(),
         new WasmPackPlugin({
+            mode: "release",
+            // See https://github.com/GoogleChromeLabs/wasm-bindgen-rayon/#readme
+            extraArgs: "--target web -- -Z build-std=panic_abort,std",
             crateDirectory: path.resolve(__dirname, "../compute"),
         }),
     ],
     module: {
         rules: [
-            {test: /\.worker\.ts$/, loader: 'worker-loader'},
             {
                 test: /\.tsx?$/,
                 use: "ts-loader",
@@ -45,11 +55,8 @@ const appConfig = {
             },
         ],
     },
-    resolve: {
-        extensions: [".ts", ".js"],
-    },
     output: { path: dist, filename: "app.js" },
-    experiments: { syncWebAssembly: true },
+    experiments: { asyncWebAssembly: true },
 };
 
 module.exports = [appConfig];

@@ -4,26 +4,31 @@
     "version": "1.0.0",
     "repository": "https://github.com/mirichan/lucifer",
     "scripts": {
-        "start": "webpack-dev-server -d --port 9090",
-        "build": "webpack --mode production",
+        "start": "cross-env RUSTUP_TOOLCHAIN=nightly RUSTFLAGS='-C target-feature=+atomics,+bulk-memory,+mutable-globals' webpack serve --mode development",
+        "start:prod": "cross-env RUSTUP_TOOLCHAIN=nightly RUSTFLAGS='-C target-feature=+atomics,+bulk-memory,+mutable-globals' webpack serve --mode production",
+        "build": "cross-env RUSTUP_TOOLCHAIN=nightly RUSTFLAGS='-C target-feature=+atomics,+bulk-memory,+mutable-globals' webpack --mode production",
         "lint": "eslint . --ignore-path ../.gitignore && cargo clippy",
         "test": "cargo test"
     },
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^4.15.2",
         "@typescript-eslint/parser": "^4.15.2",
-        "@wasm-tool/wasm-pack-plugin": "1.3.1",
+        "@wasm-tool/wasm-pack-plugin": "1.5.0",
+        "cross-env": "^7.0.3",
         "css-loader": "^5.0.1",
         "eslint": "^7.20.0",
         "eslint-plugin-editorconfig": "^3.0.2",
         "file-loader": "^6.2.0",
-        "html-webpack-plugin": "^4.5.0",
+        "html-webpack-plugin": "^5.3.2",
         "mini-css-extract-plugin": "^1.3.3",
         "ts-loader": "^8.0.13",
         "typescript": "^4.1.5",
-        "webpack": "^5.6.0",
-        "webpack-cli": "^3.3.12",
-        "webpack-dev-server": "^3.11.0",
-        "worker-loader": "^3.0.8"
+        "webpack": "^5.25.1",
+        "webpack-cli": "^4.7.2",
+        "webpack-dev-server": "^3.11.2"
+    },
+    "dependencies": {
+        "comlink": "^4.3.1",
+        "wasm-feature-detect": "^1.2.11"
     }
 }
