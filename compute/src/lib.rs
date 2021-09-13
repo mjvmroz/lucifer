@@ -36,36 +36,44 @@ fn ray_color(ray: &Ray, scene: &Scene, depth: u32) -> Color {
                 Color::WHITE.blend(&Color::new(0.5, 0.7, 1.0), t)
             },
             |record| {
-                record.material.scatter(ray, &record).map_or_else(|| Color::BLACK, |scatter_record| {
-                    scatter_record.attenuation * ray_color(&scatter_record.scattered, scene, depth - 1)
-                })
+                record.material.scatter(ray, &record).map_or_else(
+                    || Color::BLACK,
+                    |scatter_record| {
+                        scatter_record.attenuation
+                            * ray_color(&scatter_record.scattered, scene, depth - 1)
+                    },
+                )
             },
         )
     }
 }
 
 #[wasm_bindgen]
-pub fn get_buffer(
-    width: u32,
-    height: u32,
-    row0: u32,
-    rows: u32,
-) -> Vec<u8> {
+pub fn get_buffer(width: u32, height: u32, row0: u32, rows: u32) -> Vec<u8> {
     let aspect_ratio: f64 = width as f64 / height as f64;
 
     // Scene
-    let material_ground = Material::Lambertian { albedo: Color::new(0.8, 0.8, 0.0) };
-    let material_left = Material::Metal { albedo: Color::new(0.8, 0.8, 0.8), fuzz: 0.3 };
-    let material_center = Material::Lambertian { albedo: Color::new(0.7, 0.3, 0.3) };
-    let material_right = Material::Metal { albedo: Color::new(0.8, 0.6, 0.2), fuzz: 1.0 };
+    let material_ground = Material::Lambertian {
+        albedo: Color::new(0.8, 0.8, 0.0),
+    };
+    let material_left = Material::Dielectric { ref_idx: 1.5 };
+    let material_center = Material::Lambertian {
+        albedo: Color::new(0.1, 0.2, 0.5),
+    };
+    let material_right = Material::Metal {
+        albedo: Color::new(0.8, 0.6, 0.2),
+        fuzz: 0.0,
+    };
 
     let ground = Sphere::new(Point3::vec(0.0, -100.5, -1.0), 100.0, material_ground);
     let left = Sphere::new(Point3::vec(-1.0, 0.0, -1.0), 0.5, material_left);
+    let left_subtract = Sphere::new(Point3::vec(-1.0, 0.0, -1.0), -0.4, material_left);
     let center = Sphere::new(Point3::vec(0.0, 0.0, -1.0), 0.5, material_center);
     let right = Sphere::new(Point3::vec(1.0, 0.0, -1.0), 0.5, material_right);
     let scene = &Scene::new(vec![
         Box::new(ground),
         Box::new(left),
+        Box::new(left_subtract),
         Box::new(center),
         Box::new(right),
     ]);
@@ -86,7 +94,8 @@ pub fn get_buffer(
     let samples_per_pixel = 100;
     let max_depth = 50;
 
-    (row0..(row0 + rows)).rev()
+    (row0..(row0 + rows))
+        .rev()
         .into_iter()
         .flat_map(|y| {
             (0..width).into_iter().flat_map(move |x| {
