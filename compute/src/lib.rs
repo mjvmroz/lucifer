@@ -53,23 +53,23 @@ pub fn get_buffer(width: u32, height: u32, row0: u32, rows: u32) -> Vec<u8> {
     let aspect_ratio: f64 = width as f64 / height as f64;
 
     // Scene
-    let material_ground = Material::Lambertian {
+    let ground = Material::Lambertian {
         albedo: Color::new(0.8, 0.8, 0.0),
     };
-    let material_left = Material::Dielectric { ref_idx: 1.5 };
-    let material_center = Material::Lambertian {
+    let glass = Material::Dielectric { ref_idx: 1.5 };
+    let matte_blue = Material::Lambertian {
         albedo: Color::new(0.1, 0.2, 0.5),
     };
-    let material_right = Material::Metal {
+    let polished_brass = Material::Metal {
         albedo: Color::new(0.8, 0.6, 0.2),
         fuzz: 0.0,
     };
 
-    let ground = Sphere::new(Point3::vec(0.0, -100.5, -1.0), 100.0, material_ground);
-    let left = Sphere::new(Point3::vec(-1.0, 0.0, -1.0), 0.5, material_left);
-    let left_subtract = Sphere::new(Point3::vec(-1.0, 0.0, -1.0), -0.4, material_left);
-    let center = Sphere::new(Point3::vec(0.0, 0.0, -1.0), 0.5, material_center);
-    let right = Sphere::new(Point3::vec(1.0, 0.0, -1.0), 0.5, material_right);
+    let ground = Sphere::new(Point3::vec(0.0, -100.5, -1.0), 100.0, ground);
+    let left = Sphere::new(Point3::vec(-1.0, 0.0, -1.0), 0.5, glass);
+    let left_subtract = Sphere::new(Point3::vec(-1.0, 0.0, -1.0), -0.4, glass);
+    let center = Sphere::new(Point3::vec(0.0, 0.0, -1.0), 0.5, matte_blue);
+    let right = Sphere::new(Point3::vec(1.0, 0.0, -1.0), 0.5, polished_brass);
     let scene = &Scene::new(vec![
         Box::new(ground),
         Box::new(left),
