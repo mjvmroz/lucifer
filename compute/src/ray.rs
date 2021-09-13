@@ -2,7 +2,7 @@ use crate::vec3::{Point3, Vec3};
 
 use derive_more::Constructor;
 
-#[derive(Debug, Clone, Constructor)]
+#[derive(Debug, Clone, Constructor, PartialEq)]
 pub(crate) struct Ray {
     pub origin: Point3,
     pub direction: Vec3,

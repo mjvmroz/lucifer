@@ -1,8 +1,8 @@
 import { ComputeInstruction, ComputeMessage, SafeWorker } from "./custom-worker";
 import { ReadyMessage } from "./worker-pool";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ctx: SafeWorker<ComputeMessage | ReadyMessage> = self as any;
+// @ts-expect-error - the irony of unsafe assertions for _extra_ safety
+const ctx: SafeWorker<ComputeMessage | ReadyMessage> = self;
 
 import("../../compute/pkg").then((wasm) => {
     wasm.init();
@@ -32,6 +32,3 @@ import("../../compute/pkg").then((wasm) => {
 });
 
 export default null as { new (): SafeWorker<ComputeInstruction> };
-
-// TODO: better events, look into shared memory:
-// https://blog.scottlogic.com/2019/07/15/multithreaded-webassembly.html

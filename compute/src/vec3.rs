@@ -111,6 +111,15 @@ impl Vec3 {
     pub(crate) fn unit_vector(&self) -> Vec3 {
         *self / self.length()
     }
+
+    pub(crate) fn reflect(&self, normal: &Vec3) -> Vec3 {
+        *self - *normal * self.dot(normal) * 2.0
+    }
+
+    pub(crate) fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        self.x.abs() < s && self.y.abs() < s && self.z.abs() < s
+    }
 }
 
 impl std::ops::Mul<Self> for Vec3 {

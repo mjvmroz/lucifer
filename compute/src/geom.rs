@@ -1,20 +1,18 @@
 use derive_more::Constructor;
 
-use crate::{
-    ray::Ray,
-    vec3::{Point3, Vec3},
-};
+use crate::{material::Material, ray::Ray, vec3::{Point3, Vec3}};
 
 #[derive(Debug, Copy, Clone, Constructor)]
 pub(crate) struct HitRecord {
     pub t: f64,
     pub p: Point3,
+    pub material: Material,
     pub normal: Vec3,
     pub front_face: bool,
 }
 
 impl HitRecord {
-    pub fn for_ray(ray: &Ray, t: f64, p: Point3, outward_normal: Vec3) -> Self {
+    pub fn for_ray(ray: &Ray, t: f64, p: Point3, outward_normal: Vec3, material: Material) -> Self {
         let front_face = ray.direction.dot(&outward_normal) < 0.0;
         let normal = if front_face {
             outward_normal
@@ -24,6 +22,7 @@ impl HitRecord {
         Self {
             t,
             p,
+            material,
             normal,
             front_face,
         }
@@ -38,6 +37,7 @@ pub(crate) trait Hittable {
 pub(crate) struct Sphere {
     center: Point3,
     radius: f64,
+    material: Material,
 }
 
 impl Hittable for Sphere {
@@ -64,7 +64,7 @@ impl Hittable for Sphere {
         let t = root;
         let p = ray.at(t);
         let outward_normal = (p.vec - self.center.vec) / self.radius;
-        return Some(HitRecord::for_ray(ray, t, p, outward_normal));
+        return Some(HitRecord::for_ray(ray, t, p, outward_normal, self.material));
     }
 }
 

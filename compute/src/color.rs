@@ -6,7 +6,7 @@ use derive_more::{
 use crate::vec3::Vec3;
 
 #[derive(
-    Debug, Copy, Clone, PartialEq, Default, Constructor, Add, AddAssign, Sub, Mul, MulAssign, Div,
+    Debug, Copy, Clone, PartialEq, Default, Constructor, Add, AddAssign, Sub, Mul, MulAssign, Div, Product
 )]
 pub struct Color {
     pub(crate) r: f64,
@@ -30,6 +30,12 @@ impl Color {
         r: 0.0,
         g: 0.0,
         b: 1.0,
+    };
+
+    pub const YELLOW: Color = Color {
+        r: 1.0,
+        g: 1.0,
+        b: 0.0,
     };
 
     pub const BLACK: Color = Color {
@@ -73,5 +79,17 @@ impl Color {
         let g = self.g * (1.0 - ratio) + other.g * ratio;
         let b = self.b * (1.0 - ratio) + other.b * ratio;
         Color { r, g, b }
+    }
+}
+
+impl std::ops::Mul<Self> for Color {
+    type Output = Color;
+
+    fn mul(self, other: Color) -> Color {
+        Color {
+            r: self.r * other.r,
+            g: self.g * other.g,
+            b: self.b * other.b,
+        }
     }
 }

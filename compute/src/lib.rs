@@ -1,6 +1,7 @@
 mod camera;
 mod color;
 mod geom;
+mod material;
 mod math;
 mod ray;
 mod utils;
@@ -12,6 +13,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::color::Color;
 use crate::geom::{Hittable, Scene, Sphere};
+use crate::material::Material;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global allocator.
 #[cfg(feature = "wee_alloc")]
@@ -25,19 +27,21 @@ pub fn init() {
 
 fn ray_color(ray: &Ray, scene: &Scene, depth: u32) -> Color {
     if depth <= 0 {
-        return Color::BLACK;
+        Color::BLACK
+    } else {
+        scene.hit(ray, 0.001, f64::INFINITY).map_or_else(
+            || {
+                let unit_direction = ray.direction.unit_vector();
+                let t = 0.5 * (unit_direction.y + 1.0);
+                Color::WHITE.blend(&Color::new(0.5, 0.7, 1.0), t)
+            },
+            |record| {
+                record.material.scatter(ray, &record).map_or_else(|| Color::BLACK, |scatter_record| {
+                    scatter_record.attenuation * ray_color(&scatter_record.scattered, scene, depth - 1)
+                })
+            },
+        )
     }
-    scene.hit(ray, 0.001, f64::INFINITY).map_or_else(
-        || {
-            let unit_direction = ray.direction.unit_vector();
-            let t = 0.5 * (unit_direction.y + 1.0);
-            Color::WHITE.blend(&Color::new(0.5, 0.7, 1.0), t)
-        },
-        |record| {
-            let target = record.p.vec + record.normal.random_in_hemisphere();
-            ray_color(&Ray::new(record.p, target - record.p.vec), scene, depth - 1) * 0.5
-        },
-    )
 }
 
 #[wasm_bindgen]
@@ -50,9 +54,21 @@ pub fn get_buffer(
     let aspect_ratio: f64 = width as f64 / height as f64;
 
     // Scene
-    let sphere = Sphere::new(Point3::vec(0.0, 0.0, -1.0), 0.5);
-    let planet = Sphere::new(Point3::vec(0.0, -100.5, -1.0), 100.0);
-    let scene = &Scene::new(vec![Box::new(sphere), Box::new(planet)]);
+    let material_ground = Material::Lambertian { albedo: Color::new(0.8, 0.8, 0.0) };
+    let material_left = Material::Metal { albedo: Color::new(0.8, 0.8, 0.8), fuzz: 0.3 };
+    let material_center = Material::Lambertian { albedo: Color::new(0.7, 0.3, 0.3) };
+    let material_right = Material::Metal { albedo: Color::new(0.8, 0.6, 0.2), fuzz: 1.0 };
+
+    let ground = Sphere::new(Point3::vec(0.0, -100.5, -1.0), 100.0, material_ground);
+    let left = Sphere::new(Point3::vec(-1.0, 0.0, -1.0), 0.5, material_left);
+    let center = Sphere::new(Point3::vec(0.0, 0.0, -1.0), 0.5, material_center);
+    let right = Sphere::new(Point3::vec(1.0, 0.0, -1.0), 0.5, material_right);
+    let scene = &Scene::new(vec![
+        Box::new(ground),
+        Box::new(left),
+        Box::new(center),
+        Box::new(right),
+    ]);
 
     // Camera
     let viewport_height: f64 = 2.0;
