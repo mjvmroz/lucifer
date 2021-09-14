@@ -68,30 +68,31 @@ pub fn get_buffer(width: u32, height: u32, row0: u32, rows: u32) -> Vec<u8> {
         fuzz: 0.0,
     };
 
-    let ground = Sphere::new(Point3::vec(0.0, -100.5, -1.0), 100.0, ground);
-    let left = Sphere::new(Point3::vec(-1.0, 0.0, -1.0), 0.5, glass);
-    let left_subtract = Sphere::new(Point3::vec(-1.0, 0.0, -1.0), -0.4, glass);
-    let center = Sphere::new(Point3::vec(0.0, 0.0, -1.0), 0.5, matte_blue);
-    let right = Sphere::new(Point3::vec(1.0, 0.0, -1.0), 0.5, polished_brass);
-
     let matte_red = Material::Lambertian { albedo: Color::RED };
-    let matte_blue = Material::Lambertian {
-        albedo: Color::BLUE,
-    };
 
     let R = (PI / 4.0).cos();
     let scene = &Scene::new(vec![
-        // Box::new(ground),
-        // Box::new(left),
-        // Box::new(left_subtract),
-        // Box::new(center),
-        // Box::new(right),
-        Box::new(Sphere::new(Point3::vec(-R, 0.0, -1.0), R, matte_blue)),
-        Box::new(Sphere::new(Point3::vec(R, 0.0, -1.0), R, matte_red)),
+        Box::new(Sphere::new(Point3::vec(0.0, -100.5, -1.0), 100.0, ground)),
+        Box::new(Sphere::new(Point3::vec(-1.0, 0.0, -1.0), 0.5, glass)),
+        Box::new(Sphere::new(Point3::vec(-1.0, 0.0, -1.0), -0.4, glass)),
+        Box::new(Sphere::new(Point3::vec(0.0, 0.0, -1.0), 0.5, matte_blue)),
+        Box::new(Sphere::new(
+            Point3::vec(1.0, 0.0, -1.0),
+            0.5,
+            polished_brass,
+        )),
+        // Box::new(Sphere::new(Point3::vec(-R, 0.0, -1.0), R, matte_blue)),
+        // Box::new(Sphere::new(Point3::vec(R, 0.0, -1.0), R, matte_red)),
     ]);
 
     // Camera
-    let camera = &Camera::new(90.0, aspect_ratio);
+    let camera = &Camera::new(
+        Point3::vec(2.0, 2.0, -4.0),
+        Point3::vec(0.0, 0.0, -1.0),
+        Vec3::y(1.0),
+        20.0,
+        aspect_ratio,
+    );
 
     // Image
     let samples_per_pixel = 10;
