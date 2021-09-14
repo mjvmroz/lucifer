@@ -2,6 +2,7 @@ use derive_more::{
     Add, AddAssign, Constructor, Display, Div, DivAssign, Mul, MulAssign, Neg, Product, Sub,
     SubAssign, Sum,
 };
+use js_sys::Math::random;
 
 use crate::math::rand_range;
 
@@ -72,6 +73,15 @@ impl Vec3 {
                 continue;
             }
             return p;
+        }
+    }
+
+    pub(crate) fn random_in_unit_disc() -> Self {
+        loop {
+            let p = Vec3::new(rand_range(-1.0, 1.0), rand_range(-1.0, 1.0), 0.0);
+            if p.length_squared() < 1.0 {
+                return p;
+            }
         }
     }
 

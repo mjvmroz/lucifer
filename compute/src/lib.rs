@@ -85,18 +85,23 @@ pub fn get_buffer(width: u32, height: u32, row0: u32, rows: u32) -> Vec<u8> {
         // Box::new(Sphere::new(Point3::vec(R, 0.0, -1.0), R, matte_red)),
     ]);
 
+    let look_from = Point3::vec(3.0, 3.0, 2.0);
+    let look_at = Point3::vec(0.0, 0.0, -1.0);
+
     // Camera
     let camera = &Camera::new(
-        Point3::vec(2.0, 2.0, -4.0),
-        Point3::vec(0.0, 0.0, -1.0),
+        look_from,
+        look_at,
         Vec3::y(1.0),
         20.0,
         aspect_ratio,
+        0.5,
+        (look_from.vec - look_at.vec).length(),
     );
 
     // Image
-    let samples_per_pixel = 10;
-    let max_depth = 15;
+    let samples_per_pixel = 100;
+    let max_depth = 50;
 
     (row0..(row0 + rows))
         .rev()
