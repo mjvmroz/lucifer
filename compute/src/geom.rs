@@ -74,7 +74,7 @@ impl Hittable for Sphere {
 
 #[derive(Constructor)]
 pub(crate) struct Scene {
-    pub objects: Vec<Box<dyn Hittable>>,
+    pub objects: Vec<Sphere>,
 }
 
 impl Hittable for Scene {

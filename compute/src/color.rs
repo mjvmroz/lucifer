@@ -3,10 +3,25 @@ use derive_more::{
     SubAssign, Sum,
 };
 
-use crate::vec3::Vec3;
+use crate::{
+    math::{rand, rand_range},
+    vec3::Vec3,
+};
 
 #[derive(
-    Debug, Copy, Clone, PartialEq, Default, Constructor, Add, AddAssign, Sub, Mul, MulAssign, Div, Product
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Default,
+    Constructor,
+    Add,
+    AddAssign,
+    Sub,
+    Mul,
+    MulAssign,
+    Div,
+    Product,
 )]
 pub struct Color {
     pub(crate) r: f64,
@@ -14,6 +29,22 @@ pub struct Color {
     pub(crate) b: f64,
 }
 impl Color {
+    pub(crate) fn random() -> Color {
+        Color {
+            r: rand(),
+            g: rand(),
+            b: rand(),
+        }
+    }
+
+    pub(crate) fn random_range(min: f64, max: f64) -> Color {
+        Color {
+            r: rand_range(min, max),
+            g: rand_range(min, max),
+            b: rand_range(min, max),
+        }
+    }
+
     pub const RED: Color = Color {
         r: 1.0,
         g: 0.0,

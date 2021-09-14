@@ -7,8 +7,6 @@ mod ray;
 mod utils;
 mod vec3;
 
-use std::f64::consts::PI;
-
 use ray::Ray;
 use vec3::{Point3, Vec3};
 use wasm_bindgen::prelude::*;
@@ -17,6 +15,7 @@ use crate::camera::Camera;
 use crate::color::Color;
 use crate::geom::{Hittable, Scene, Sphere};
 use crate::material::Material;
+use crate::math::{rand, rand_range};
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global allocator.
 #[cfg(feature = "wee_alloc")]
@@ -55,38 +54,10 @@ fn ray_color(ray: &Ray, scene: &Scene, depth: u32) -> Color {
 pub fn get_buffer(width: u32, height: u32, row0: u32, rows: u32) -> Vec<u8> {
     let aspect_ratio: f64 = width as f64 / height as f64;
 
-    // Scene
-    let ground = Material::Lambertian {
-        albedo: Color::new(0.8, 0.8, 0.0),
-    };
-    let glass = Material::Dielectric { ref_idx: 1.5 };
-    let matte_blue = Material::Lambertian {
-        albedo: Color::new(0.1, 0.2, 0.5),
-    };
-    let polished_brass = Material::Metal {
-        albedo: Color::new(0.8, 0.6, 0.2),
-        fuzz: 0.0,
-    };
+    let scene = &generate_scene();
 
-    let matte_red = Material::Lambertian { albedo: Color::RED };
-
-    let R = (PI / 4.0).cos();
-    let scene = &Scene::new(vec![
-        Box::new(Sphere::new(Point3::vec(0.0, -100.5, -1.0), 100.0, ground)),
-        Box::new(Sphere::new(Point3::vec(-1.0, 0.0, -1.0), 0.5, glass)),
-        Box::new(Sphere::new(Point3::vec(-1.0, 0.0, -1.0), -0.4, glass)),
-        Box::new(Sphere::new(Point3::vec(0.0, 0.0, -1.0), 0.5, matte_blue)),
-        Box::new(Sphere::new(
-            Point3::vec(1.0, 0.0, -1.0),
-            0.5,
-            polished_brass,
-        )),
-        // Box::new(Sphere::new(Point3::vec(-R, 0.0, -1.0), R, matte_blue)),
-        // Box::new(Sphere::new(Point3::vec(R, 0.0, -1.0), R, matte_red)),
-    ]);
-
-    let look_from = Point3::vec(3.0, 3.0, 2.0);
-    let look_at = Point3::vec(0.0, 0.0, -1.0);
+    let look_from = Point3::vec(13.0, 2.0, 3.0);
+    let look_at = Point3::vec(0.0, 0.0, 0.0);
 
     // Camera
     let camera = &Camera::new(
@@ -95,13 +66,13 @@ pub fn get_buffer(width: u32, height: u32, row0: u32, rows: u32) -> Vec<u8> {
         Vec3::y(1.0),
         20.0,
         aspect_ratio,
-        0.5,
-        (look_from.vec - look_at.vec).length(),
+        0.1,
+        10.0,
     );
 
     // Image
-    let samples_per_pixel = 100;
-    let max_depth = 50;
+    let samples_per_pixel = 10;
+    let max_depth = 20;
 
     (row0..(row0 + rows))
         .rev()
@@ -121,4 +92,62 @@ pub fn get_buffer(width: u32, height: u32, row0: u32, rows: u32) -> Vec<u8> {
             })
         })
         .collect()
+}
+
+fn generate_scene() -> Scene {
+    let random_entities: Vec<Sphere> = (-11..11)
+        .into_iter()
+        .flat_map(|a| {
+            (-11..11).into_iter().flat_map(move |b| {
+                let choose_mat = rand();
+                let center = Point3::vec(a as f64 + 0.9 * rand(), 0.2, b as f64 + 0.9 * rand());
+
+                if (center.vec - Point3::vec(4.0, 0.2, 0.0).vec).length() > 0.9 {
+                    if choose_mat < 0.8 {
+                        // diffuse
+                        let albedo = Color::random() * Color::random();
+                        let material = Material::Lambertian { albedo };
+                        Some(Sphere::new(center, 0.2, material))
+                    } else if choose_mat < 0.95 {
+                        // metal
+                        let albedo = Color::random_range(0.5, 1.0);
+                        let fuzz = rand_range(0.0, 0.5);
+                        let material = Material::Metal { albedo, fuzz };
+                        Some(Sphere::new(center, 0.2, material))
+                    } else {
+                        // glass
+                        let material = Material::Dielectric { ref_idx: 1.5 };
+                        Some(Sphere::new(center, 0.2, material))
+                    }
+                } else {
+                    None
+                }
+            })
+        })
+        .collect();
+
+    let ground = Material::Lambertian {
+        albedo: Color::new(0.5, 0.5, 0.5),
+    };
+    let glass = Material::Dielectric { ref_idx: 1.5 };
+    let clay = Material::Lambertian {
+        albedo: Color::new(0.4, 0.2, 0.1),
+    };
+    let polished_brass = Material::Metal {
+        albedo: Color::new(0.7, 0.6, 0.5),
+        fuzz: 0.0,
+    };
+
+    Scene::new(
+        [
+            random_entities,
+            vec![
+                Sphere::new(Point3::vec(0.0, -1000.0, 0.0), 1000.0, ground),
+                Sphere::new(Point3::vec(0.0, 1.0, 0.0), 1.0, glass),
+                Sphere::new(Point3::vec(-4.0, 1.0, 0.0), 1.0, clay),
+                Sphere::new(Point3::vec(4.0, 1.0, 0.0), 1.0, polished_brass),
+            ],
+        ]
+        .concat(),
+    )
 }

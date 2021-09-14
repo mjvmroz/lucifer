@@ -4,7 +4,7 @@ import { ComputeMessage } from "./custom-worker";
 import { WorkerPool } from "./worker-pool";
 
 const width = 400;
-const aspectRatio = 16 / 9;
+const aspectRatio = 3 / 2;
 const height = width / aspectRatio;
 
 const canvas = document.createElement("canvas");
