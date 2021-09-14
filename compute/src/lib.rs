@@ -142,8 +142,8 @@ fn generate_scene() -> Scene {
                         // metal
                         let albedo =
                             Color::new(0.3, 0.4, 0.5) + srand_color_range(&mut prng, 0.0, 0.2);
-                        let fuzz = srand_range(&mut prng, 0.0, 0.1);
-                        let material = Material::Metal { albedo, fuzz: 0.0 };
+                        let fuzz = srand_range(&mut prng, 0.0, 0.15);
+                        let material = Material::Metal { albedo, fuzz };
                         Some(Sphere::new(center, 0.2, material))
                     } else {
                         // glass
