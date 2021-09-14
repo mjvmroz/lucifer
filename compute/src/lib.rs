@@ -70,8 +70,8 @@ pub fn get_buffer(width: u32, height: u32, row0: u32, rows: u32) -> Vec<u8> {
     );
 
     // Image
-    let samples_per_pixel = 30;
-    let max_depth = 50;
+    let samples_per_pixel = 10;
+    let max_depth = 10;
 
     (row0..(row0 + rows))
         .rev()
@@ -140,9 +140,10 @@ fn generate_scene() -> Scene {
                         Some(Sphere::new(center, 0.2, material))
                     } else if choose_mat < 0.95 {
                         // metal
-                        let albedo = srand_color_range(&mut prng, 0.5, 1.0);
-                        let fuzz = srand_range(&mut prng, 0.0, 0.5);
-                        let material = Material::Metal { albedo, fuzz };
+                        let albedo =
+                            Color::new(0.3, 0.4, 0.5) + srand_color_range(&mut prng, 0.0, 0.2);
+                        let fuzz = srand_range(&mut prng, 0.0, 0.1);
+                        let material = Material::Metal { albedo, fuzz: 0.0 };
                         Some(Sphere::new(center, 0.2, material))
                     } else {
                         // glass
@@ -163,7 +164,7 @@ fn generate_scene() -> Scene {
     let clay = Material::Lambertian {
         albedo: Color::new(0.4, 0.2, 0.1),
     };
-    let polished_brass = Material::Metal {
+    let pyrite = Material::Metal {
         albedo: Color::new(0.7, 0.6, 0.5),
         fuzz: 0.0,
     };
@@ -175,7 +176,7 @@ fn generate_scene() -> Scene {
                 Sphere::new(Point3::vec(0.0, -1000.0, 0.0), 1000.0, ground),
                 Sphere::new(Point3::vec(0.0, 1.0, 0.0), 1.0, glass),
                 Sphere::new(Point3::vec(-4.0, 1.0, 0.0), 1.0, clay),
-                Sphere::new(Point3::vec(4.0, 1.0, 0.0), 1.0, polished_brass),
+                Sphere::new(Point3::vec(4.0, 1.0, 0.0), 1.0, pyrite),
             ],
         ]
         .concat(),
