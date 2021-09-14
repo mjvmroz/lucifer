@@ -15,7 +15,6 @@ use crate::camera::Camera;
 use crate::color::Color;
 use crate::geom::{Hittable, Scene, Sphere};
 use crate::material::Material;
-use crate::math::{rand, rand_range};
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global allocator.
 #[cfg(feature = "wee_alloc")]
@@ -72,7 +71,7 @@ pub fn get_buffer(width: u32, height: u32, row0: u32, rows: u32) -> Vec<u8> {
 
     // Image
     let samples_per_pixel = 10;
-    let max_depth = 20;
+    let max_depth = 10;
 
     (row0..(row0 + rows))
         .rev()
@@ -94,24 +93,55 @@ pub fn get_buffer(width: u32, height: u32, row0: u32, rows: u32) -> Vec<u8> {
         .collect()
 }
 
+// We generally use JS rand, but here we need stuff seeded since we're running it on every thread for the time being.
+// And yes I know that Math.random isn't cryptographically random... but I'm not going to shell out for that, and
+// "prng" here helps me distinguish the ideas.
+
+fn srand(prng: &mut oorandom::Rand64) -> f64 {
+    prng.rand_float()
+}
+fn srand_range(prng: &mut oorandom::Rand64, min: f64, max: f64) -> f64 {
+    prng.rand_float() * (max - min) - min
+}
+fn srand_color(prng: &mut oorandom::Rand64) -> Color {
+    Color {
+        r: prng.rand_float(),
+        g: prng.rand_float(),
+        b: prng.rand_float(),
+    }
+}
+fn srand_color_range(prng: &mut oorandom::Rand64, min: f64, max: f64) -> Color {
+    Color {
+        r: srand_range(prng, min, max),
+        g: srand_range(prng, min, max),
+        b: srand_range(prng, min, max),
+    }
+}
+
 fn generate_scene() -> Scene {
+    let mut prng = oorandom::Rand64::new(0);
     let random_entities: Vec<Sphere> = (-11..11)
         .into_iter()
         .flat_map(|a| {
+            prng = oorandom::Rand64::new(prng.rand_u64().into());
             (-11..11).into_iter().flat_map(move |b| {
-                let choose_mat = rand();
-                let center = Point3::vec(a as f64 + 0.9 * rand(), 0.2, b as f64 + 0.9 * rand());
+                let choose_mat = srand(&mut prng);
+                let center = Point3::vec(
+                    a as f64 + 0.9 * srand(&mut prng),
+                    0.2,
+                    b as f64 + 0.9 * srand(&mut prng),
+                );
 
                 if (center.vec - Point3::vec(4.0, 0.2, 0.0).vec).length() > 0.9 {
                     if choose_mat < 0.8 {
                         // diffuse
-                        let albedo = Color::random() * Color::random();
+                        let albedo = srand_color(&mut prng) * srand_color(&mut prng);
                         let material = Material::Lambertian { albedo };
                         Some(Sphere::new(center, 0.2, material))
                     } else if choose_mat < 0.95 {
                         // metal
-                        let albedo = Color::random_range(0.5, 1.0);
-                        let fuzz = rand_range(0.0, 0.5);
+                        let albedo = srand_color_range(&mut prng, 0.5, 1.0);
+                        let fuzz = srand_range(&mut prng, 0.0, 0.5);
                         let material = Material::Metal { albedo, fuzz };
                         Some(Sphere::new(center, 0.2, material))
                     } else {

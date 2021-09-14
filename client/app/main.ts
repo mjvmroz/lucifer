@@ -31,8 +31,8 @@ WorkerPool.create(ComputeWorker, (message: ComputeMessage) => {
             type: "test",
             width,
             height,
-            row0: Math.floor((height / pool.size) * i),
-            rows: Math.floor(height / pool.size),
+            row0: Math.ceil((height / pool.size) * i),
+            rows: Math.ceil(height / pool.size),
         });
     }
 });
