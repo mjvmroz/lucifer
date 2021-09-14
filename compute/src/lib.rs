@@ -70,8 +70,8 @@ pub fn get_buffer(width: u32, height: u32, row0: u32, rows: u32) -> Vec<u8> {
     );
 
     // Image
-    let samples_per_pixel = 10;
-    let max_depth = 10;
+    let samples_per_pixel = 30;
+    let max_depth = 50;
 
     (row0..(row0 + rows))
         .rev()
