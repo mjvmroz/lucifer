@@ -7,10 +7,13 @@ mod ray;
 mod utils;
 mod vec3;
 
+use std::f64::consts::PI;
+
 use ray::Ray;
 use vec3::{Point3, Vec3};
 use wasm_bindgen::prelude::*;
 
+use crate::camera::Camera;
 use crate::color::Color;
 use crate::geom::{Hittable, Scene, Sphere};
 use crate::material::Material;
@@ -70,29 +73,29 @@ pub fn get_buffer(width: u32, height: u32, row0: u32, rows: u32) -> Vec<u8> {
     let left_subtract = Sphere::new(Point3::vec(-1.0, 0.0, -1.0), -0.4, glass);
     let center = Sphere::new(Point3::vec(0.0, 0.0, -1.0), 0.5, matte_blue);
     let right = Sphere::new(Point3::vec(1.0, 0.0, -1.0), 0.5, polished_brass);
+
+    let matte_red = Material::Lambertian { albedo: Color::RED };
+    let matte_blue = Material::Lambertian {
+        albedo: Color::BLUE,
+    };
+
+    let R = (PI / 4.0).cos();
     let scene = &Scene::new(vec![
-        Box::new(ground),
-        Box::new(left),
-        Box::new(left_subtract),
-        Box::new(center),
-        Box::new(right),
+        // Box::new(ground),
+        // Box::new(left),
+        // Box::new(left_subtract),
+        // Box::new(center),
+        // Box::new(right),
+        Box::new(Sphere::new(Point3::vec(-R, 0.0, -1.0), R, matte_blue)),
+        Box::new(Sphere::new(Point3::vec(R, 0.0, -1.0), R, matte_red)),
     ]);
 
     // Camera
-    let viewport_height: f64 = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
-    let focal_length = 1.0;
-
-    let origin = Point3::ZERO;
-    let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, viewport_height, 0.0);
-    let lower_left_corner = Point3::new(
-        origin.vec - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, focal_length),
-    );
+    let camera = &Camera::new(90.0, aspect_ratio);
 
     // Image
-    let samples_per_pixel = 100;
-    let max_depth = 50;
+    let samples_per_pixel = 10;
+    let max_depth = 15;
 
     (row0..(row0 + rows))
         .rev()
@@ -105,10 +108,7 @@ pub fn get_buffer(width: u32, height: u32, row0: u32, rows: u32) -> Vec<u8> {
                         .fold(Color::BLACK, move |acc, _i| {
                             let u: f64 = (x as f64 + math::rand()) / (width - 1) as f64;
                             let v: f64 = (y as f64 + math::rand()) / (height - 1) as f64;
-                            let r = Ray::new(
-                                origin,
-                                lower_left_corner.vec + horizontal * u + vertical * v - origin.vec,
-                            );
+                            let r = camera.get_ray(u, v);
                             acc + ray_color(&r, scene, max_depth)
                         });
                 (sampled_color / samples_per_pixel as f64).sqrt().to_bytes()

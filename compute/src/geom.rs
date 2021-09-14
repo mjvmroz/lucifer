@@ -1,6 +1,10 @@
 use derive_more::Constructor;
 
-use crate::{material::Material, ray::Ray, vec3::{Point3, Vec3}};
+use crate::{
+    material::Material,
+    ray::Ray,
+    vec3::{Point3, Vec3},
+};
 
 #[derive(Debug, Copy, Clone, Constructor)]
 pub(crate) struct HitRecord {
@@ -53,18 +57,18 @@ impl Hittable for Sphere {
         }
         let sqrt_discriminant = discriminant.sqrt();
 
-        let mut root = (-half_b - sqrt_discriminant) / a;
-        if root < t_min || t_max < root {
-            root = (-half_b + sqrt_discriminant) / a;
-            if root < t_min || t_max < root {
-                return None;
-            }
-        }
-
-        let t = root;
-        let p = ray.at(t);
-        let outward_normal = (p.vec - self.center.vec) / self.radius;
-        return Some(HitRecord::for_ray(ray, t, p, outward_normal, self.material));
+        [
+            (-half_b - sqrt_discriminant) / a,
+            (-half_b + sqrt_discriminant) / a,
+        ]
+        .iter()
+        .filter(|root| **root > t_min && **root < t_max)
+        .map(|t| {
+            let p = ray.at(*t);
+            let outward_normal = (p.vec - self.center.vec) / self.radius;
+            HitRecord::for_ray(ray, *t, p, outward_normal, self.material)
+        })
+        .next()
     }
 }
 

@@ -7,11 +7,13 @@ export class WorkerWrapper<In, Out extends { type: string }> {
 
     constructor(
         private readonly worker: SafeWorker<In>,
-        private callback: (message: Out) => void,
-) {
+        private callback: (message: Out) => void
+    ) {
         this.worker = worker;
         this.ready = new Promise<void>((ready) => {
-            this.worker.onmessage = (event: MessageEvent<Out | ReadyMessage>) => {
+            this.worker.onmessage = (
+                event: MessageEvent<Out | ReadyMessage>
+            ) => {
                 if (event.data.type === "ready") {
                     ready();
                 } else {
@@ -40,23 +42,25 @@ export class WorkerPool<
     private readonly workers: WorkerWrapper<In, Out>[];
     private i = 0;
     private constructor(
-        readonly con: {new(): SafeWorker<In>},
+        readonly con: { new (): SafeWorker<In> },
         readonly callback: (message: Out) => void,
-        public readonly size: number,
+        public readonly size: number
     ) {
-        this.workers = Array(size).fill(0).map(() => new WorkerWrapper<In, Out>(new con(), callback));
+        this.workers = Array(size)
+            .fill(0)
+            .map(() => new WorkerWrapper<In, Out>(new con(), callback));
     }
 
     public static async create<
         In extends { type: string },
         Out extends { type: string }
     >(
-        con: {new(): SafeWorker<In>},
+        con: { new (): SafeWorker<In> },
         callback: (message: Out) => void,
-        size: number = Math.max(Math.min(navigator.hardwareConcurrency || 4, 64), 1),
+        size: number = Math.min(navigator.hardwareConcurrency || 4, 64)
     ): Promise<WorkerPool<In, Out>> {
         const pool = new WorkerPool<In, Out>(con, callback, size);
-        await Promise.all(pool.workers.map(worker => worker.ready));
+        await Promise.all(pool.workers.map((worker) => worker.ready));
         return pool;
     }
 
