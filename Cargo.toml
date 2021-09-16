@@ -1,8 +1,8 @@
 [workspace]
 
-members = ["compute"]
+members = ["compute", "ui"]
 
 [profile.release]
-opt-level = "s"
-lto = true
 codegen-units = 1
+lto = true
+opt-level = "s"
