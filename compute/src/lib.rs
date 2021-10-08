@@ -9,22 +9,11 @@ mod vec3;
 
 use ray::Ray;
 use vec3::{Point3, Vec3};
-use wasm_bindgen::prelude::*;
 
 use crate::camera::Camera;
 use crate::color::Color;
 use crate::geom::{Hittable, Scene, Sphere};
 use crate::material::Material;
-
-// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global allocator.
-#[cfg(feature = "wee_alloc")]
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-
-#[wasm_bindgen]
-pub fn init() {
-    utils::init();
-}
 
 fn ray_color(ray: &Ray, scene: &Scene, depth: u32) -> Color {
     if depth <= 0 {
@@ -49,7 +38,6 @@ fn ray_color(ray: &Ray, scene: &Scene, depth: u32) -> Color {
     }
 }
 
-#[wasm_bindgen]
 pub fn get_buffer(width: u32, height: u32, row0: u32, rows: u32) -> Vec<u8> {
     let aspect_ratio: f64 = width as f64 / height as f64;
 
@@ -155,6 +143,7 @@ fn generate_scene() -> Scene {
                 }
             })
         })
+        .filter(|_| false)
         .collect();
 
     let ground = Material::Lambertian {

@@ -1,5 +1,7 @@
+use web_sys::Document;
+
 use yew::prelude::*;
-use yewprint::Blockquote;
+use yewprint::{Blockquote, Button};
 
 #[derive(Clone, Properties)]
 pub(crate) struct Props {
@@ -47,10 +49,11 @@ impl Component for QuickMathComponent {
         html! {
             <div>
                 <Blockquote>
-                    {"2 + 2 = 4!\n+1 +1 +1 ..."}
+                    {"2 + 2 = 4!"}
+                    {"+1 +1 +1 ..."}
                 </Blockquote>
                 <p>{self.value}</p>
-                <button onclick={onclick}>{"Add one"}</button>
+                <Button onclick={onclick} >{"Add one"}</Button>
             </div>
         }
     }

@@ -1,6 +1,7 @@
 mod about;
 mod index;
 mod quickmath;
+mod renderer;
 
 use std::borrow::Cow;
 
@@ -19,6 +20,8 @@ pub enum AppRoute {
     About,
     #[to = "/quickmath/{value}"]
     QuickMath(i32),
+    #[to = "/renderer"]
+    Renderer,
     #[to = "/"]
     Index,
 }
@@ -84,12 +87,17 @@ impl Component for App {
                     text=html!("QuickMath")
                     href=Cow::Borrowed("/quickmath/13")
                     onclick=self.nav_to(AppRoute::QuickMath(13)) />
+                <MenuItem
+                    text=html!("Renderer")
+                    href=Cow::Borrowed("/renderer")
+                    onclick=self.nav_to(AppRoute::Renderer) />
             </Menu>
             <Router<AppRoute, ()>
                 render = Router::render(|switch: AppRoute| {
                     match switch {
                         AppRoute::Index => html!{<index::IndexComponent/>},
                         AppRoute::About => html!{<about::AboutComponent/>},
+                        AppRoute::Renderer => html!{<renderer::RendererComponent/>},
                         AppRoute::QuickMath(value) => html!{<quickmath::QuickMathComponent value=value/>},
                     }
                 })
