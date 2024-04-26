@@ -2,6 +2,10 @@
 
 He brings the light.
 
+Rust raytracer implementation based on [raytracer in a weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html).
+
+Implemented monolithically with WASM in mind as a compilation target, not because it makes sense but because it provided me with the opportunity to learn more things at once.
+
 ## Pre-requisites
 
 -   Rust ([install](https://rustup.rs/)) – The Rust programming language and toolchain
