@@ -1,7 +1,3 @@
 {
-    "recommendations": [
-        "matklad.rust-analyzer",
-        "esbenp.prettier-vscode",
-        "tonybaloney.vscode-pets"
-    ]
+    "recommendations": ["matklad.rust-analyzer", "esbenp.prettier-vscode"]
 }
